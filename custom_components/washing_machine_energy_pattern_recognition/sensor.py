@@ -34,7 +34,8 @@ class WashingPatternSensor(SensorEntity):
         self.manager = manager
         self.kind = kind
         self._attr_unique_id = f"{entry_id}_{kind}"
-        self._attr_name, self._attr_native_unit_of_measurement, self._attr_state_class = DESCRIPTIONS[kind]
+        self._attr_translation_key = kind
+        _, self._attr_native_unit_of_measurement, self._attr_state_class = DESCRIPTIONS[kind]
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry_id)},
             name=manager.name,

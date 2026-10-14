@@ -16,7 +16,7 @@ async def async_setup_entry(hass, entry, async_add_entities):
 
 class WashingPatternRunning(BinarySensorEntity):
     _attr_has_entity_name = True
-    _attr_name = "Running"
+    _attr_translation_key = "running"
     _attr_device_class = BinarySensorDeviceClass.RUNNING
 
     def __init__(self, manager, entry_id: str):

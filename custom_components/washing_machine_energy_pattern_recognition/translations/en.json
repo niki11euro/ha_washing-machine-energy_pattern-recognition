@@ -1,0 +1,68 @@
+{
+  "title": "Washing Machine Energy Pattern Recognition",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Select your washing machine",
+        "description": "Choose the power sensor of the smart plug. All analysis stays local.",
+        "data": {
+          "name": "Name",
+          "power_entity": "Power sensor"
+        }
+      }
+    },
+    "abort": {
+      "already_configured": "This power sensor is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Recognition settings",
+        "data": {
+          "start_w": "Start threshold (W)",
+          "end_w": "Finish threshold (W)",
+          "start_hold": "Start confirmation (seconds)",
+          "end_hold": "Finish confirmation (seconds)",
+          "min_cycle_minutes": "Minimum cycle duration (minutes)",
+          "prediction_after_minutes": "First prediction after (minutes)",
+          "prediction_every_minutes": "Recalculate every (minutes)",
+          "import_days": "Import last days from Recorder"
+        }
+      }
+    },
+    "error": {
+      "threshold_order": "The finish threshold must be smaller than the start threshold."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "pattern": {
+        "name": "Detected pattern"
+      },
+      "remaining": {
+        "name": "Estimated remaining time"
+      },
+      "finish": {
+        "name": "Estimated finish"
+      },
+      "confidence": {
+        "name": "Prediction confidence"
+      },
+      "count": {
+        "name": "Archived cycles"
+      },
+      "last": {
+        "name": "Last completed cycle"
+      }
+    },
+    "binary_sensor": {
+      "running": {
+        "name": "Running"
+      }
+    }
+  }
+}

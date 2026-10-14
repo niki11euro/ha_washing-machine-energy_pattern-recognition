@@ -34,5 +34,35 @@
     "error": {
       "threshold_order": "The finish threshold must be smaller than the start threshold."
     }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "pattern": {
+        "name": "Detected pattern"
+      },
+      "remaining": {
+        "name": "Estimated remaining time"
+      },
+      "finish": {
+        "name": "Estimated finish"
+      },
+      "confidence": {
+        "name": "Prediction confidence"
+      },
+      "count": {
+        "name": "Archived cycles"
+      },
+      "last": {
+        "name": "Last completed cycle"
+      }
+    },
+    "binary_sensor": {
+      "running": {
+        "name": "Running"
+      }
+    }
   }
 }

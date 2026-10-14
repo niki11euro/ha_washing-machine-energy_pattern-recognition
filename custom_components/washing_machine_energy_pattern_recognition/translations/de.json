@@ -5,10 +5,15 @@
       "user": {
         "title": "Waschmaschine auswählen",
         "description": "Wähle den Leistungssensor des Zwischensteckers. Die Analyse erfolgt lokal.",
-        "data": {"name": "Name", "power_entity": "Leistungssensor"}
+        "data": {
+          "name": "Name",
+          "power_entity": "Leistungssensor"
+        }
       }
     },
-    "abort": {"already_configured": "Dieser Leistungssensor ist bereits eingerichtet."}
+    "abort": {
+      "already_configured": "Dieser Leistungssensor ist bereits eingerichtet."
+    }
   },
   "options": {
     "step": {
@@ -26,6 +31,38 @@
         }
       }
     },
-    "error": {"threshold_order": "Die Endschwelle muss unter der Startschwelle liegen."}
+    "error": {
+      "threshold_order": "Die Endschwelle muss unter der Startschwelle liegen."
+    }
+  },
+  "entity": {
+    "sensor": {
+      "status": {
+        "name": "Status"
+      },
+      "pattern": {
+        "name": "Erkanntes Muster"
+      },
+      "remaining": {
+        "name": "Voraussichtliche Restlaufzeit"
+      },
+      "finish": {
+        "name": "Voraussichtlich fertig um"
+      },
+      "confidence": {
+        "name": "Prognosesicherheit"
+      },
+      "count": {
+        "name": "Archivierte Waschgänge"
+      },
+      "last": {
+        "name": "Letzter abgeschlossener Waschgang"
+      }
+    },
+    "binary_sensor": {
+      "running": {
+        "name": "Läuft"
+      }
+    }
   }
 }

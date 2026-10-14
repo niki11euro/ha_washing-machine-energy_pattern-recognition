@@ -1,61 +1,57 @@
+<p align="center">
+  <img src="custom_components/washing_machine_energy_pattern_recognition/brand/logo.png" alt="WashPattern" width="620">
+</p>
+
 # Washing Machine Energy Pattern Recognition
 
-A **local, self-learning Home Assistant custom integration** which recognizes washing-cycle energy patterns from an existing smart-plug power sensor and estimates the time remaining. **No cloud account, AI key, subscription or separate server required.**
+**WashPattern** is a local, self-learning Home Assistant integration that recognizes washing-machine electricity patterns and estimates how much time remains. Works with **any power sensor** (Shelly, Tasmota, ESPHome, etc.), without an OpenAI account, external server, subscription or cloud connection.
+
+> **Installation:** Initially distributed via **HACS Custom repositories**. This repository has not been submitted to the official HACS default list.
+
+## Install through HACS (custom repository)
+
+Requires **Home Assistant 2026.3.0 or newer** and HACS installed.
+
+1. In Home Assistant open **HACS** → the **⋮** menu → **Custom repositories**.
+2. Add `https://github.com/niki11euro/ha_washing-machine-energy_pattern-recognition`.
+3. Choose category **Integration**, select **Add**, then open and download WashPattern.
+4. **Restart Home Assistant**.
+5. Go to **Settings → Devices & services → Add integration**, search for **Washing Machine Energy Pattern Recognition**.
+6. Select the **power sensor** of the washing machine (W, mW or kW).
+
+You can also install it manually by copying `custom_components/washing_machine_energy_pattern_recognition/` into your Home Assistant `config/custom_components/` folder and restarting Home Assistant.
+
+**Important:** Do not copy the repository root into `custom_components`; copy only the integration folder. Existing washing-machine automations and Shelly settings are not changed by this integration.
 
 ## Features
 
-- Select any Home Assistant power sensor (W, mW, kW) in the UI.
-- Start and stop detection with adjustable thresholds and dwell times.
-- Archive completed cycles independently of Home Assistant Recorder's default retention.
-- Automatically import already recorded cycles from the last 1–9 days.
-- Store original power readings and 30-second time-weighted profiles in separate SQLite storage.
-- Model each cycle with 24 DCT coefficients and label similar historic profiles using constrained DTW.
-- Estimate remaining time with partial/prefix DTW, showing a **heuristic** confidence score.
-- Restore in-progress sessions after restart; persist raw power data about every 30 seconds.
-- Provide dashboard-ready sensors, binary sensor, and `import_history` / `label_cycle` actions.
-- Fully offline; standard-library algorithms (no heavy NumPy/SciPy packages).
+- Automatic start/finish detection with editable power thresholds and confirmation times.
+- Persistent local **SQLite** database of completed cycles, original readings and 30-second profiles.
+- Optional one-time or repeated import of recent Home Assistant **Recorder** history (typically 10-day raw retention).
+- Compact **DCT** coefficients for describing a washing cycle and constrained **DTW** comparisons to find similar past cycles.
+- Rest-time estimates using partial/prefix DTW, updated every five minutes by default, with a heuristic confidence score.
+- Auto-clustering into "Pattern 1", "Pattern 2", etc.; users can label a completed cycle with its actual wash-program name.
+- Cycle-in-progress recovery across Home Assistant restarts, plus a running binary sensor and dashboard-ready sensors.
+- All analysis happens locally. **No network calls** to an AI service or third-party server.
 
-## Install
+## Entities
 
-### HACS (custom repository)
+| Entity | Meaning |
+| --- | --- |
+| Running | True while a washing cycle is detected |
+| Status | `idle` or `running` |
+| Detected pattern | Automatic group or manually assigned program label |
+| Estimated remaining time | Minutes; unavailable when a suitable comparison does not exist |
+| Estimated finish | Estimated timestamp |
+| Prediction confidence | Relative heuristic score (0–100); **not** a calibrated probability |
+| Archived cycles | Number of completed cycles in the local archive |
+| Last completed cycle | Last finish time; attributes include `cycle_id`, power peak, energy and duration |
 
-1. HACS → three-dot menu → **Custom repositories** → paste this GitHub repository URL.
-2. Choose **Integration**, add repository and download the integration.
-3. Restart Home Assistant.
-4. **Settings → Devices & services → Add integration → Washing Machine Energy Pattern Recognition**.
-5. Choose the power sensor of your washing-machine smart plug.
+Configure thresholds under **Settings → Devices & services → Washing Machine Energy Pattern Recognition → Configure**. Initial defaults: start above 5 W for 20 seconds, finish below 2.5 W for 8 minutes, minimum washing cycle 10 minutes, first prediction after 10 minutes. These are configurable to your machine and should be tested against actual cycle behavior.
 
-### Manual
+## Import past wash cycles
 
-Copy `custom_components/washing_machine_energy_pattern_recognition` into the same path in your Home Assistant configuration directory, restart HA, and add the integration through **Settings → Devices & services**.
-
-Recommended minimum: Home Assistant 2025.12 or later. Recorder must be enabled for the history backfill feature. Sensor must be included in Recorder's tracked entities.
-
-## Sensors
-
-Each washer exposes a **Running** binary sensor and:
-
-| Sensor | Meaning |
-|---|---|
-| Status | `idle` / `running` |
-| Detected pattern | Auto-cluster `Pattern 1`, ... or manually assigned program label |
-| Estimated remaining time | Minutes; unavailable until a sufficiently similar previous cycle exists |
-| Estimated finish | Predicted UTC timestamp, displayed locally by HA |
-| Prediction confidence | Heuristic 0–100 score **not a probability** |
-| Archived cycles | Total count |
-| Last completed cycle | Timestamp with duration, energy, peak, ID and label attributes |
-
-Prediction begins after 10 minutes by default and updates every 5 minutes. A prediction is withheld if the best historical match is too different. Early predictions with only one prior sample are inherently uncertain.
-
-## Settings
-
-Under the integration's **Configure** menu you can adjust thresholds (5 W start / 2.5 W end by default), confirmation delays (20 s / 8 min), minimum cycle length (10 min), prediction timing and history import lookback.
-
-**False stop prevention:** low power must persist for eight minutes before a cycle is finalized; the end time itself is the beginning of the confirmed low-power interval. If your washer pauses longer than that during a program, increase the delay.
-
-### History import
-
-On startup, the integration attempts to import complete cycles from the Recorder's past seven days. Repeat manually in **Developer tools → Actions**:
+Open **Developer Tools → Actions** and run:
 
 ```yaml
 action: washing_machine_energy_pattern_recognition.import_history
@@ -63,11 +59,11 @@ data:
   days: 7
 ```
 
-Import is idempotent (cycles with start timestamps within 120 seconds are deduplicated). Recorder usually only has approximately ten days of raw history; this does **not** reconstruct older raw curves from hourly long-term statistics.
+The integration also attempts an idempotent import on startup (default: last seven days). For best results, your power sensor must already be recorded by Home Assistant Recorder. Older hourly long-term statistics cannot reconstruct the original detailed power trace. Cycles detected too near the lookback boundary are not imported.
 
-### Name a cycle
+## Name a recorded cycle
 
-The **Last completed cycle** sensor exposes `cycle_id`. To assign a program name:
+The **Last completed cycle** sensor exposes the `cycle_id` attribute. To label it:
 
 ```yaml
 action: washing_machine_energy_pattern_recognition.label_cycle
@@ -76,24 +72,32 @@ data:
   label: Cotton 40°C
 ```
 
-If multiple machines are configured, also supply `entry_id` in service data. Naming isn't required for pattern recognition. Similar cycles receive automatic pattern numbers; manually entered program labels take precedence when selected as nearest neighbour.
+For multiple configured machines, additionally pass their `entry_id` to either action.
 
-## How it works
+## How prediction works
 
-1. The built-in Recorder is used for historical backfill and for recovery of missing live power changes at cycle completion.
-2. Current measurement changes are buffered and persisted in a separate SQLite archive every 30 seconds while running.
-3. End-of-cycle raw data is resampled using a time-weighted zero-order hold into 30-second mean/max bins.
-4. An orthonormal discrete cosine transform (DCT-II) of log power yields compact coefficients for archival and future experimentation; **DTW still uses the full mean/max profile**, preserving useful peaks.
-5. A band-constrained DTW clusters complete cycles. During a cycle, restricted prefix-DTW aligns the current partial trace to each archived reference and takes the median of up to three matched remaining times.
-6. If no plausible match exists, the prediction stays unavailable instead of reporting a misleadingly precise time.
+1. Irregular measurements are converted into time-weighted 30-second average/max bins.
+2. A discrete cosine transform (DCT) creates a compact numerical fingerprint.
+3. DTW compares profile shapes; a partial DTW alignment matches an unfinished cycle to completed cycles.
+4. Only sufficiently close matches are used. The median of up to three matched residual durations becomes the prediction.
+5. Similar historical cycles are grouped into recurring patterns; naming these manually is optional.
 
-**Important:** Electrical power alone cannot reliably identify the exact manufacturer program, temperature or wash phase; pattern names are not machine-program identification without user labeling. The comparison/confidence thresholds are initial heuristics. They should be validated with more real cycles before relying on precise deadlines. In a power outage or HA shutdown, a gap in Recorder data can limit accuracy.
+**Limitations:** Wattage alone cannot determine the exact wash temperature, manufacturer program or phase. A few recorded cycles do **not** guarantee an accurate end-time prediction. Confidence is a relative score, not a probability. Sensor gaps or unusually long pauses may affect results. Prediction quality improves when similar programs have been recorded repeatedly.
 
-## Storage and privacy
+## Local files, privacy and backups
 
-Each configured washer writes `washing_pattern_<config_entry_id>.db` into Home Assistant's configuration directory. It contains full power traces, profiles, coefficient arrays and optional manual labels. **No data leaves Home Assistant.** Include these DB files in backups. Removing the integration does not automatically delete them.
+One SQLite file per configured washer is stored at `<home-assistant-config>/washing_pattern_<entry_id>.db`, *outside* the HACS-updated integration directory. Installation and updates do not overwrite that database. Include these files in Home Assistant backups. Removing the integration does not delete the archive automatically.
 
-The integration does **not** switch the smart plug or modify existing Home Assistant automations. If you have other automations sending wash-finished notifications, they continue to run independently.
+WashPattern does not switch your smart plug, alter automations, or transmit household measurements to a third-party service.
+
+## Brand images and HACS validation
+
+- Built-in custom integration branding is included in `custom_components/washing_machine_energy_pattern_recognition/brand/` (256×256 `icon.png`, 512×512 `icon@2x.png`, light and dark logos). On **Home Assistant 2026.3+**, these assets are shown locally on the integration page.
+- HACS currently may show an "icon not available" placeholder in its **own** dashboard even though the icon works in Home Assistant. This is an [upstream HACS issue](https://github.com/hacs/integration/issues/5171), not a missing local brand asset.
+- GitHub Actions run Python tests, [HACS validation](https://hacs.xyz/docs/publish/action/) and [Home Assistant hassfest](https://github.com/home-assistant/actions#hassfest).
+- HACS custom repositories work without publishing a GitHub Release. A release is recommended before submitting to the default HACS store.
+
+For maintainers: the GitHub repository must remain **public**, have an **About description**, **topics** and enabled issues for the HACS publisher checks. See [HACS publisher requirements](https://hacs.xyz/docs/publish/start/) and [integration requirements](https://hacs.xyz/docs/publish/integration/).
 
 ## Development
 
@@ -101,4 +105,4 @@ The integration does **not** switch the smart plug or modify existing Home Assis
 python -m unittest discover -s tests -v
 ```
 
-Issues and contributions welcome. MIT license.
+Problems or suggestions? Please use [GitHub Issues](https://github.com/niki11euro/ha_washing-machine-energy_pattern-recognition/issues). Contributions welcome. **MIT license.**
