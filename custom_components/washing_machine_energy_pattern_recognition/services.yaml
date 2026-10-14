@@ -1,0 +1,39 @@
+import_history:
+  name: Import history
+  description: Import complete washing cycles from Home Assistant Recorder (normally at most 10 days available).
+  fields:
+    entry_id:
+      name: Config entry ID
+      description: Only required if multiple washing machines are configured.
+      selector:
+        text:
+    days:
+      name: Days to import
+      default: 7
+      selector:
+        number:
+          min: 1
+          max: 9
+          mode: box
+label_cycle:
+  name: Name a washing cycle
+  description: Attach a human-readable program name to an archived cycle.
+  fields:
+    entry_id:
+      name: Config entry ID
+      description: Only required if multiple washing machines are configured.
+      selector:
+        text:
+    cycle_id:
+      name: Cycle ID
+      required: true
+      selector:
+        number:
+          min: 1
+          max: 100000
+          mode: box
+    label:
+      name: Program name
+      required: true
+      selector:
+        text:

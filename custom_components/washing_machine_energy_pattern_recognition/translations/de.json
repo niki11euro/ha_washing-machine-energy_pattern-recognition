@@ -1,0 +1,31 @@
+{
+  "title": "Waschmaschine: Energie-Mustererkennung",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Waschmaschine auswählen",
+        "description": "Wähle den Leistungssensor des Zwischensteckers. Die Analyse erfolgt lokal.",
+        "data": {"name": "Name", "power_entity": "Leistungssensor"}
+      }
+    },
+    "abort": {"already_configured": "Dieser Leistungssensor ist bereits eingerichtet."}
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Einstellungen für die Erkennung",
+        "data": {
+          "start_w": "Startschwelle (W)",
+          "end_w": "Endschwelle (W)",
+          "start_hold": "Start bestätigen nach (Sekunden)",
+          "end_hold": "Ende bestätigen nach (Sekunden)",
+          "min_cycle_minutes": "Mindestdauer (Minuten)",
+          "prediction_after_minutes": "Erste Prognose nach (Minuten)",
+          "prediction_every_minutes": "Prognose aktualisieren alle (Minuten)",
+          "import_days": "Vergangene Tage aus Recorder importieren"
+        }
+      }
+    },
+    "error": {"threshold_order": "Die Endschwelle muss unter der Startschwelle liegen."}
+  }
+}

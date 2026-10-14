@@ -1,0 +1,14 @@
+{
+  "domain": "washing_machine_energy_pattern_recognition",
+  "name": "Washing Machine Energy Pattern Recognition",
+  "version": "0.1.0",
+  "documentation": "https://github.com/niki11euro/ha_washing-machine-energy_pattern-recognition",
+  "issue_tracker": "https://github.com/niki11euro/ha_washing-machine-energy_pattern-recognition/issues",
+  "codeowners": ["@niki11euro"],
+  "dependencies": ["recorder"],
+  "after_dependencies": ["shelly"],
+  "iot_class": "local_push",
+  "integration_type": "helper",
+  "config_flow": true,
+  "requirements": []
+}
