@@ -16,7 +16,7 @@ class HacsPackagingTests(unittest.TestCase):
         hacs = json.loads((ROOT / 'hacs.json').read_text())
         self.assertEqual(manifest['domain'], DOMAIN)
         self.assertEqual(manifest['integration_type'], 'device')
-        self.assertEqual(manifest['version'], '0.2.0')
+        self.assertEqual(manifest['version'], '0.2.1')
         self.assertTrue(manifest['config_flow'])
         self.assertTrue(manifest['version'])
         self.assertTrue(manifest['documentation'].startswith('https://'))

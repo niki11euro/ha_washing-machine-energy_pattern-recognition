@@ -4,18 +4,19 @@ from __future__ import annotations
 
 from datetime import datetime, timezone
 
-from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
+from homeassistant.components.sensor import SensorEntity, SensorStateClass
 from homeassistant.core import callback
 from homeassistant.helpers.entity import DeviceInfo
 
 from .const import DOMAIN
+from .display import format_finish_clock, minutes_until
 
 # Every entry exposes only these three sensors plus a running binary sensor.
 # Statistics, confidence and the last cycle are attributes, not extra entities.
 DESCRIPTIONS = {
     "pattern": {"icon": "mdi:chart-line-variant"},
     "remaining": {"icon": "mdi:timer-outline", "unit": "min", "state_class": SensorStateClass.MEASUREMENT},
-    "finish": {"icon": "mdi:clock-check-outline", "device_class": SensorDeviceClass.TIMESTAMP},
+    "finish": {"icon": "mdi:clock-check-outline"},
 }
 
 
@@ -62,9 +63,9 @@ class WashingPatternSensor(SensorEntity):
         if self.kind == "pattern":
             return prediction.pattern if prediction else None
         if self.kind == "remaining":
-            return round(prediction.remaining_seconds / 60) if prediction else None
+            return minutes_until(manager.predicted_end) if prediction and manager.predicted_end else None
         if self.kind == "finish":
-            return datetime.fromtimestamp(manager.predicted_end, timezone.utc) if prediction and manager.predicted_end else None
+            return format_finish_clock(manager.predicted_end, self.hass.config.time_zone) if prediction and manager.predicted_end else None
         return None
 
     @property
@@ -85,10 +86,16 @@ class WashingPatternSensor(SensorEntity):
                 "last_cycle_pattern": last.get("pattern") if last else None,
             }
         if self.kind in ("remaining", "finish") and prediction:
-            return {
+            attributes = {
                 "confidence_score": prediction.confidence,
                 "confidence_is_probability": False,
                 "matched_cycle_ids": list(prediction.matched_cycle_ids),
                 "dtw_distance": prediction.distance,
             }
+            # Preserve the machine-readable timestamp for automations.
+            if self.kind == "finish" and manager.predicted_end is not None:
+                attributes["estimated_finish_iso"] = datetime.fromtimestamp(
+                    manager.predicted_end, timezone.utc
+                ).isoformat()
+            return attributes
         return None

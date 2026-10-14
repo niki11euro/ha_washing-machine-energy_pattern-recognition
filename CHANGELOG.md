@@ -1,5 +1,13 @@
 # Changelog
 
+## 0.2.1 — 2026-10-14
+
+- Render predicted finish as a local `HH:MM` clock time instead of Home Assistant's relative timestamp representation.
+- Keep the absolute UTC finish timestamp in the `estimated_finish_iso` attribute for automations.
+- Make remaining time count down between prediction refreshes.
+- Preserve the four original entity IDs, all stored cycles, and the existing database schema.
+
+
 ## 0.2.0 — 2026-10-14
 
 - Fix Home Assistant integration type from `helper` to `device`, so it appears under normal integrations instead of helpers.

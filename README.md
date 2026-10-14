@@ -35,8 +35,8 @@ Only four entities are created per washer, all attached to **one device**:
 |---|---|
 | **Running** (binary sensor) | `on` while a wash cycle is detected; attributes include current power and last completed cycle details. |
 | **Detected pattern** | Manually named program or automatically clustered pattern during a run. Archive count and last-cycle identification are available as attributes while idle. |
-| **Estimated remaining time** | Minutes until completion; confidence score, matched cycle IDs and DTW distance are available as attributes. |
-| **Estimated finish** | Estimated finish timestamp, visible only when there is a plausible match. |
+| **Estimated remaining time** | Live countdown in minutes until completion; confidence score, matched cycle IDs and DTW distance are available as attributes. |
+| **Estimated finish** | Local clock time (`HH:MM`) instead of a relative time; full ISO timestamp in the `estimated_finish_iso` attribute. |
 
 The interface includes German and English entity names. Missing predictions intentionally remain unavailable/unknown until a sufficiently similar historical pattern has been learned. The confidence score is a **heuristic**, not a calibrated percentage probability.
 
@@ -60,6 +60,14 @@ data:
 ```
 
 The `cycle_id` for the latest cycle is an attribute of the **Running** binary sensor and the **Detected pattern** sensor. Supply `entry_id` for these actions if more than one washer is configured. Historical imports are idempotent for approximate matching start times.
+
+## Upgrading to 0.2.1
+
+The **Estimated finish** sensor now displays the **local clock time** (`16:32`) rather than Home Assistant's relative timestamp (`In 16 minutes`). Its entity ID and unique ID remain unchanged. For timestamp-based automations, use the new `estimated_finish_iso` attribute, since the entity state is now text rather than a timestamp. The **Estimated remaining time** sensor now counts down between five-minute prediction updates. No helpers, extra entities or database migration are required. Restart Home Assistant once after downloading the update in HACS.
+
+## Proposed training metadata (not yet implemented)
+
+For later program recognition, capture **per-completed-cycle** details such as the machine's program, temperature, spin speed, quick/speed/eco/prewash/extra-rinse switches, and optionally load size. A concise display label could be `Cotton | 30°C | 1200 rpm | Quick` while the actual fields are stored separately and linked to the recorded power profile. Program names should not be inferred as ground truth from automatic `Pattern N` clusters.
 
 ## Upgrading from 0.1.x
 
