@@ -37,9 +37,6 @@
   },
   "entity": {
     "sensor": {
-      "status": {
-        "name": "Status"
-      },
       "pattern": {
         "name": "Erkanntes Muster"
       },
@@ -48,15 +45,6 @@
       },
       "finish": {
         "name": "Voraussichtlich fertig um"
-      },
-      "confidence": {
-        "name": "Prognosesicherheit"
-      },
-      "count": {
-        "name": "Archivierte Waschgänge"
-      },
-      "last": {
-        "name": "Letzter abgeschlossener Waschgang"
       }
     },
     "binary_sensor": {

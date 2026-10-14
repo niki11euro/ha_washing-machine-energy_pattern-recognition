@@ -15,6 +15,8 @@ class HacsPackagingTests(unittest.TestCase):
         manifest = json.loads((INTEGRATION / 'manifest.json').read_text())
         hacs = json.loads((ROOT / 'hacs.json').read_text())
         self.assertEqual(manifest['domain'], DOMAIN)
+        self.assertEqual(manifest['integration_type'], 'device')
+        self.assertEqual(manifest['version'], '0.2.0')
         self.assertTrue(manifest['config_flow'])
         self.assertTrue(manifest['version'])
         self.assertTrue(manifest['documentation'].startswith('https://'))
@@ -23,6 +25,15 @@ class HacsPackagingTests(unittest.TestCase):
         self.assertEqual(hacs['homeassistant'], '2026.3.0')
         self.assertTrue(hacs['name'])
         self.assertNotIn('render_readme', hacs)
+
+    def test_no_excess_helpers_or_entities(self):
+        code = (INTEGRATION / 'sensor.py').read_text()
+        self.assertIn('DESCRIPTIONS = {', code)
+        self.assertNotIn('\"status\":', code)
+        self.assertNotIn('\"confidence\":', code)
+        self.assertNotIn('\"count\":', code)
+        self.assertNotIn('\"last\":', code)
+        self.assertEqual((INTEGRATION / 'binary_sensor.py').read_text().count('class WashingPatternRunning'), 1)
 
     def test_brand_icons_and_logos(self):
         brand = INTEGRATION / 'brand'
@@ -44,6 +55,7 @@ class HacsPackagingTests(unittest.TestCase):
         for lang in ('de', 'en'):
             with self.subTest(language=lang):
                 localized = json.loads((INTEGRATION / 'translations' / f'{lang}.json').read_text())
+                self.assertEqual(set(localized['entity']['sensor']), {'pattern', 'remaining', 'finish'})
                 self.assertEqual(localized['entity']['sensor'].keys(), strings['entity']['sensor'].keys())
                 self.assertEqual(localized['entity']['binary_sensor'].keys(), strings['entity']['binary_sensor'].keys())
 

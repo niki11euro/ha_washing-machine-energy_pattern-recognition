@@ -37,9 +37,6 @@
   },
   "entity": {
     "sensor": {
-      "status": {
-        "name": "Status"
-      },
       "pattern": {
         "name": "Detected pattern"
       },
@@ -48,15 +45,6 @@
       },
       "finish": {
         "name": "Estimated finish"
-      },
-      "confidence": {
-        "name": "Prediction confidence"
-      },
-      "count": {
-        "name": "Archived cycles"
-      },
-      "last": {
-        "name": "Last completed cycle"
       }
     },
     "binary_sensor": {
